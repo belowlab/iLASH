@@ -8,6 +8,7 @@
 
 #include <string>
 #include <sstream>
+#include <array>
 #include "context.h"
 
 #include "corpus.h"
@@ -29,7 +30,7 @@ class filereader {
 
 
 public:
-    std::string meta[meta_size]; 
+    std::array<std::string, meta_size> meta;
     dnabit ** bits; 
     uint32_t *hash_buffer;
     uint32_t ids[2];

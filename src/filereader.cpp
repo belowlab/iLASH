@@ -48,7 +48,7 @@ filereader::filereader(unique_ptr<string> input_string, Context * context) {
 
     this->context = context;
 
-    for(unsigned i= 0 ; i<meta_size; i++){
+    for(unsigned i= 0 ; i<meta.size(); i++){
         this->meta[i] = get_next(iter, end);
     }
     this->ind = 0;

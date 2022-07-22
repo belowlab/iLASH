@@ -1,7 +1,7 @@
 
 map ./test_files/test.map
 
-ped ./test_files/test.ped
+ped ./test_files/phased.vcf.gz
 
 output ./test_files/output.match
 
