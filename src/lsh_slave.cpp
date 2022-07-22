@@ -26,6 +26,47 @@ LSH_Slave::LSH_Slave(Corpus * corpus, std::mutex *linesLock, shared_ptr<queue<un
     this->runFlag = runFlag;
 }
 
+void LSH_Slave::run_vcf() {
+    auto line = make_unique<string>();
+    auto num_variants = this->corpus->context->map_data.size();
+    // Read VCF Headers first to determine number of samples. Need a different block to handle VCF header vs tabular lines
+    auto num_samples = 20;
+    auto filereaders = vector<unique_ptr<filereader>>(num_samples);
+    auto minhashers = vector<unique_ptr<Minhasher>>(num_samples);
+
+    // Populate filereaders and minhashers for each sample. Ideally set the "meta" fields here too
+    for (size_t i = 0; i < num_samples; i++) {
+        filereaders.emplace_back(make_unique<filereader>(this->corpus->context));
+        minhashers.emplace_back(make_unique<Minhasher>(this->corpus->context));
+    }
+
+    while(*runFlag) {
+        //trying to read from input Q
+        this->linesLock->lock();
+        if (this->linesQ->empty()) {
+            //if empty, we release the lock and wait for another round
+            this->linesLock->unlock();
+            // *run_flag = false;
+            this_thread::sleep_for(chrono::milliseconds(100));
+        } else {
+            line = move(this->linesQ->front());
+            this->linesQ->pop();
+            this->linesLock->unlock();
+
+            auto *parser = new filereader(std::move(line), this->corpus->context);
+            auto *minhash = new Minhasher(this->corpus->context);
+
+            parser->register_to_experiment(this->corpus); //registers the two haplotypes read into the corpus.
+
+            uint32_t *hash_buffer; //minhash buffer
+            uint32_t **lsh_buffer; //LSH temporary buffer
+            std::unordered_map<uint32_t, unsigned short> relatives[2]; //LSH hits for each haplotype.
+
+            // Not actually done yet
+        }
+    }
+}
+
 void LSH_Slave::run() { 
     auto line = make_unique<string>();
     while(*runFlag) {

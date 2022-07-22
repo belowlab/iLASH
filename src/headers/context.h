@@ -20,6 +20,8 @@ static const unsigned VERSION_MAJOR = 1;
 static const unsigned VERSION_MINOR = 0;
 static const unsigned VERSION_REVISION = 2;
 
+enum InputType { VCF, PED };
+
 //Run option is used to pass the program arguments from the file to the context class.
 class RunOptions{
 public:
@@ -120,6 +122,7 @@ public:
     unsigned short max_error;
     bool auto_slice;
     unsigned thread_count;
+    InputType inputType;
 
     uint8_t minhash_threshold;
 

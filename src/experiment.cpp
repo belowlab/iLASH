@@ -7,6 +7,10 @@
 #include "headers/lsh_slave.h"
 #include "headers/writer.h"
 
+#include <boost/iostreams/device/file.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+#include <boost/iostreams/filter/gzip.hpp>
+
 #include <thread>
 #include <iostream>
 #include <queue>
@@ -22,6 +26,20 @@ using namespace std;
 void lsh_thread(Corpus *corpus, std::mutex * linesLock, shared_ptr<queue<unique_ptr<std::string>>> linesQ, atomic<bool> *runFlag){
     LSH_Slave slave(corpus,linesLock,move(linesQ),runFlag);
     slave.run();
+}
+
+// Check bytes at beginning of stream to see if it's a gzipped file
+static bool isGzip(const char* input_addr) {
+    ifstream infile(input_addr, std::ios_base::binary);
+
+    uint8_t bytes[2];
+
+    infile.read((char*) &bytes[0], 2);
+
+    if (bytes[0] == 0x1f && bytes[1] == 0x8b) {
+        return true;
+    }
+    return false;
 }
 
 //Context get-set. Context objects can also be imported from a RunOptions instance using the setup_context functions.
@@ -53,12 +71,27 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
     }
     cout<<"Threads started"<<endl;
 
-    ifstream ped_file(input_addr,ifstream::in);
+    // Check file type. Could also do this based on file suffix.
+    if (isGzip(input_addr)) {
+        this->context.inputType = VCF;
+    } else {
+        this->context.inputType = PED;
+    }
+
+    boost::iostreams::file_source infile(input_addr);
+    boost::iostreams::filtering_istream instream;
+
+    if (this->context.inputType == VCF) { // We actually don't know if its a VCF, just if it's compressed
+        instream.push(boost::iostreams::gzip_decompressor());
+    }
+
+    instream.push(infile);
+
     auto local_str_ptr = make_unique<string>();
     long counter = 0;
 
     //Read everything from file and load it in a queue. Worker threads will process them.
-    while(getline(ped_file,*local_str_ptr)){
+    while(getline(instream,*local_str_ptr)){ // Dynamically choose which stream?
         linesLock->lock();
         linesQ->push(move(local_str_ptr));
         linesLock->unlock();

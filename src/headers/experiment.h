@@ -33,8 +33,6 @@ public:
     void write_to_file(const char * );
 
 
-
-
 };
 
 #endif //IBD_EXPERIMENT_H

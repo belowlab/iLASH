@@ -23,6 +23,23 @@ inline string get_next(boost::tokenizer<>::iterator& it, boost::tokenizer<>::ite
     return *it++;
 }
 
+filereader::filereader(Context * context):
+    context{context},
+    ind{0},
+    shingle_ind{0},
+    hash_buffer{new uint32_t[2]},
+    bits{new dnabit*[2]},
+    dna_hash{new uint32_t*[2]}
+{
+    //Initializing the memory required for the haplotype analysis in LSH steps.
+    //bits will hold the real SNP values
+    this->bits[0] = new dnabit[this->context->map_data.size()];
+    this->bits[1] = new dnabit[this->context->map_data.size()];
+    //dna hash will hold tokenized SNPs that are turn into hashes
+    this->dna_hash[0] = new uint32_t[this->context->shingle_map.size()];
+    this->dna_hash[1] = new uint32_t[this->context->shingle_map.size()];
+}
+
 filereader::filereader(unique_ptr<string> input_string, Context * context) {
     // Instead of an istringstream, read the const string into a boost::tokenizer
     boost::tokenizer<> tok(*input_string);

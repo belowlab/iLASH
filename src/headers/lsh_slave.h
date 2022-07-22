@@ -30,6 +30,8 @@ public:
     void run(); //When the master thread is ready, it will call this function. This action initiates the process of readding from the queue and parsing it.
     inline void corpus_generator( uint32_t ** , std::unordered_map<uint32_t,unsigned short> *, unsigned ,uint32_t *);
     inline void aggregator(std::unordered_map<uint32_t,unsigned short> *, unsigned ,uint32_t *);
+
+    void run_vcf(); // Separate entry point for VCFs.
 };
 
 #endif //IBD_LSH_SLAVE_H

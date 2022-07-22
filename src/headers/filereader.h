@@ -37,6 +37,7 @@ public:
     uint32_t ** dna_hash;
     unsigned shingle_ind;
 
+    filereader(Context *);
     filereader(std::unique_ptr<std::string> input_string, Context *context);
     uint32_t* getNextHashed();
     ~filereader();
