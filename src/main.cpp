@@ -137,17 +137,17 @@ int main(int argc, char *argv[]) {
             cout<<"Genotype file:"<<runOptions.ped_addr<<'.'<<endl;
             xp.read_bulk(runOptions.ped_addr.c_str(),runOptions.out_addr.c_str());
         }
-        catch (FileException e){
+        catch (FileException &e){
             cout<<e.what()<<endl;
             cout<<"Make sure iLASH has permission to access both the input and the output files."<<endl;
             return 0;
         }
-        catch (FieldException e){
+        catch (FieldException &e){
             cout<<e.what()<<endl;
             cout<<"Required fields for configuration file are: MAP and PED file address"<<endl;
             return 0;
         }
-        catch (DimensionException e){
+        catch (DimensionException &e){
             cout<<e.what()<<endl;
             cout<<"Please check all the samples to have the same number of features as the map file. Also, number of the meta fields in the PED file should be 6 for all samples."<<endl;
             return 0;

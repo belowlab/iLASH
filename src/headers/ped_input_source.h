@@ -9,8 +9,8 @@
 
 class Ped_Input_Source : public Input_Source {
 public:
-    Ped_Input_Source(const char *input_addr);
-    ~Ped_Input_Source() = default;
+    explicit Ped_Input_Source(const char *input_addr);
+    ~Ped_Input_Source() override = default;
 
     bool getNextLine(std::string &line) override;
 private:
