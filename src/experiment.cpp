@@ -89,8 +89,11 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
         itemsInQ = linesQ->size();
         linesLock->unlock();
         if (ticksSinceUpdate > OUTPUT_INTERVAL) {
-            cout << "There are " << itemsInQ << "items left to process in the queue.";
-            cout << "They have been processed at " << (prevItemsInQ - itemsInQ) / OUTPUT_INTERVAL << "per second";
+            double processingRate = (prevItemsInQ - itemsInQ) / OUTPUT_INTERVAL;
+            cout << "There are " << itemsInQ << "items left to process in the queue.\n";
+            cout << "They have been processed at " << processingRate << "per second\n";
+            cout << "Estimated remaining time is " << (itemsInQ / processingRate) / 60 << " minutes\n";
+            ticksSinceUpdate = 0;
         }
         ++ticksSinceUpdate;
         this_thread::sleep_for(chrono::milliseconds(1000));

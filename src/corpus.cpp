@@ -78,10 +78,6 @@ void Corpus::integrate(std::unordered_map<uint32_t, unsigned short> *relatives, 
     uint32_t maxi;
     uint64_t thekey;
 
-    if (relatives->size() > 4000) {
-        cout << "There's more than " << relatives->size() << " relatives at slice number " << slice_number << "\n";
-    }
-
     for(auto it = relatives->begin(); it!=relatives->end(); ++it){
         if(it->second >= this->context->minimum_interest){
 
