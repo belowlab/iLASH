@@ -6,14 +6,18 @@
 #define IBD_CORPUS_H
 
 #include "context.h"
+
 #include <unordered_map>
+#include <unordered_set>
+
+using lsh_map = std::unordered_map<uint32_t,std::unordered_set<uint32_t > >;
 
 //Like context, corpus is shared among all the entities that interact in a experiment. 
 //corpus class is in charge of holding experiment's data.
 class Corpus{
 public:
     std::mutex *LSH_Lock; //A set of locks (one lock per slice) to synchronize the LSH matrix. 
-    std::unordered_map<uint32_t,std::vector<uint32_t > > **LSH_MAT; //LSH matrix 
+    lsh_map **LSH_MAT; //LSH matrix
 
     std::mutex agg_poiter; //synchronizing the agg_ptr
 //    std::unordered_map<uint32_t,std::unordered_map<uint32_t, std::vector<std::pair<unsigned,bool> > > > * agg_ptr;

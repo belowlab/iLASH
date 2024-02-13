@@ -25,7 +25,7 @@ inline string get_next(boost::tokenizer<boost::char_separator<char>>::iterator& 
 
 filereader::filereader(unique_ptr<string> input_string, Context * context) {
     // Instead of an istringstream, read the const string into a boost::tokenizer
-    boost::char_separator<char> sep(" ");
+    boost::char_separator<char> sep(" \t");
     boost::tokenizer<boost::char_separator<char>> tok(*input_string, sep);
     boost::tokenizer<boost::char_separator<char>>::iterator iter = tok.begin();
     auto end = tok.end();

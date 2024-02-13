@@ -62,6 +62,7 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
 
     //Read everything from file and load it in a queue. Worker threads will process them.
     while(input->getNextLine(*local_str_ptr)){
+//        cout << *local_str_ptr;
         linesLock->lock();
         linesQ->push(std::move(local_str_ptr));
         linesLock->unlock();
@@ -73,13 +74,25 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
     }
     //wait for threads to finish going through the queue
     cout<<"Read everything from the file."<<endl;
+    int ticksSinceUpdate = 0;
+    size_t itemsInQ = 0;
+    size_t prevItemsInQ = 0;
+    const static int OUTPUT_INTERVAL = 20;
+
     while(true){
         linesLock->lock();
         if(linesQ->empty()){
             linesLock->unlock();
             break;
         }
+        prevItemsInQ = itemsInQ;
+        itemsInQ = linesQ->size();
         linesLock->unlock();
+        if (ticksSinceUpdate > OUTPUT_INTERVAL) {
+            cout << "There are " << itemsInQ << "items left to process in the queue.";
+            cout << "They have been processed at " << (prevItemsInQ - itemsInQ) / OUTPUT_INTERVAL << "per second";
+        }
+        ++ticksSinceUpdate;
         this_thread::sleep_for(chrono::milliseconds(1000));
     }
     runFlag = false;

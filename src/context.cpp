@@ -8,7 +8,6 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
-#include <stdlib.h>
 #include <random>
 
 using namespace std;
@@ -89,6 +88,7 @@ void Context::auto_slice_map(double min_length,double cm_overlap) {
     if(base == last){ //there are 2 ways we can reach the end of a chromosome, this part addresses both of them. 
         this->slice_idx[this->slice_idx.size()-1].second = this->map_data.size();
     }else{
+        cout<<"Slice detected: "<<base<<"-"<<this->map_data.size()<<"; Dist: "<<this->map_data.back().gen_dist-this->map_data[base].gen_dist<<endl;
         this->slice_idx.push_back(make_pair(base,this->map_data.size()));
     }
     cout<<"Number of slices:"<<this->slice_idx.size()<<'\n';

@@ -16,10 +16,10 @@ uint64_t inline make_key(uint32_t id1,uint32_t id2){
 void Corpus::initializer(Context *context) {
     this->context = context;
     this->person_counter = 0;
-    this->LSH_MAT = new unordered_map<uint32_t, vector<uint32_t > > *[this->context->slice_count];
+    this->LSH_MAT = new lsh_map *[this->context->slice_count];
     this->LSH_Lock = new mutex[this->context->slice_count];
     for(unsigned i = 0 ; i < this->context->slice_count; i++){
-        this->LSH_MAT[i] = new unordered_map<uint32_t ,vector<uint32_t> >[this->context->bucket_count];
+        this->LSH_MAT[i] = new lsh_map[this->context->bucket_count];
     }
     this->agg_ptr = new std::unordered_map<uint64_t , vector<pair<unsigned,bool> >  >();
 //    this->agg_ptr
@@ -54,18 +54,18 @@ void Corpus::add_to_corpus(uint32_t *hash_val, uint32_t id, unsigned slice_num
     this->LSH_Lock[slice_num].lock();
     for(unsigned k = 0 ; k < this->context->bucket_count; k++){
         if(this->LSH_MAT[slice_num][k].find(hash_val[k]) == this->LSH_MAT[slice_num][k].end()){
-            this->LSH_MAT[slice_num][k][hash_val[k]] = vector<uint32_t>();
-            this->LSH_MAT[slice_num][k][hash_val[k]].push_back(id);
+            this->LSH_MAT[slice_num][k][hash_val[k]] = unordered_set<uint32_t>();
+            this->LSH_MAT[slice_num][k][hash_val[k]].emplace(id);
         }
         else{
-            for(unsigned i = 0 ; i < this->LSH_MAT[slice_num][k][hash_val[k]].size(); i++){
-                if(relatives[0].find(this->LSH_MAT[slice_num][k][hash_val[k]][i]) == relatives[0].end()){
-                    relatives[0][this->LSH_MAT[slice_num][k][hash_val[k]][i]] = 1;
+            for(unsigned int i : this->LSH_MAT[slice_num][k][hash_val[k]]){
+                if(relatives[0].find(i) == relatives[0].end()){
+                    relatives[0][i] = 1;
                 }else{
-                    relatives[0][this->LSH_MAT[slice_num][k][hash_val[k]][i]] += 1;
+                    relatives[0][i] += 1;
                 }
             }
-            this->LSH_MAT[slice_num][k][hash_val[k]].push_back(id);
+            this->LSH_MAT[slice_num][k][hash_val[k]].emplace(id);
         }
 
     }
@@ -74,26 +74,30 @@ void Corpus::add_to_corpus(uint32_t *hash_val, uint32_t id, unsigned slice_num
 }
 
 void Corpus::integrate(std::unordered_map<uint32_t, unsigned short> *relatives, uint32_t id, unsigned slice_number) {
-    this->agg_poiter.lock();
     uint32_t mini;
     uint32_t maxi;
     uint64_t thekey;
 
+    if (relatives->size() > 4000) {
+        cout << "There's more than " << relatives->size() << " relatives at slice number " << slice_number << "\n";
+    }
+
     for(auto it = relatives->begin(); it!=relatives->end(); ++it){
         if(it->second >= this->context->minimum_interest){
+
             mini = min(id,it->first);
             maxi = max(id,it->first);
             thekey = make_key(mini,maxi);
+            this->agg_poiter.lock();
             if(this->agg_ptr->find(thekey) == this->agg_ptr->end()){
                 this->agg_ptr[0][thekey] = vector<pair<unsigned ,bool> >();
 
             }
             this->agg_ptr[0][thekey].push_back(make_pair(slice_number,(it->second >= this->context->minimum_match)));
-
+            this->agg_poiter.unlock();
         }
     }
 
-    this->agg_poiter.unlock();
 }
 
 bool Corpus::are_the_same(uint32_t id1, uint32_t id2, unsigned slice_num) {
