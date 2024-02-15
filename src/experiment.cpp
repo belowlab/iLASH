@@ -77,7 +77,7 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
     int ticksSinceUpdate = 0;
     size_t itemsInQ = 0;
     size_t prevItemsInQ = 0;
-    const static int OUTPUT_INTERVAL = 20;
+    const static int OUTPUT_INTERVAL = 60;
 
     while(true){
         linesLock->lock();
@@ -90,8 +90,8 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
         linesLock->unlock();
         if (ticksSinceUpdate > OUTPUT_INTERVAL) {
             double processingRate = (prevItemsInQ - itemsInQ) / OUTPUT_INTERVAL;
-            cout << "There are " << itemsInQ << "items left to process in the queue.\n";
-            cout << "They have been processed at " << processingRate << "per second\n";
+            cout << "There are " << itemsInQ << " items left to process in the queue.\n";
+            cout << "They have been processed at " << processingRate << " per second\n";
             cout << "Estimated remaining time is " << (itemsInQ / processingRate) / 60 << " minutes\n";
             ticksSinceUpdate = 0;
         }
@@ -102,6 +102,14 @@ void Experiment::read_bulk(const char *input_addr, const char *output_addr) {
     cout<<"Waiting for threads for finish their jobs"<<'\n';
     for(unsigned i = 0 ; i < lsh_thread_list.size();i++){
         lsh_thread_list[i].join();
+    }
+
+    // Write out the biggest clusters in each bucket
+    cout << "Writing out biggest cluster in each slice\n";
+    for (size_t i = 0; i < corpus.slice_biggest_clusters.size(); ++i) {
+        corpus.slice_clusters_lock[i].lock();
+        cout << i << ": " << corpus.slice_biggest_clusters[i] << "\n";
+        corpus.slice_clusters_lock[i].unlock();
     }
     //start estimating iLASH from the LSH hash structure
     cout<<"Writing\n";

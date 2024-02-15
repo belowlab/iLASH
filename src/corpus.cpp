@@ -18,6 +18,8 @@ void Corpus::initializer(Context *context) {
     this->person_counter = 0;
     this->LSH_MAT = new lsh_map *[this->context->slice_count];
     this->LSH_Lock = new mutex[this->context->slice_count];
+    this->slice_clusters_lock = new mutex[this->context->slice_count];
+
     for(unsigned i = 0 ; i < this->context->slice_count; i++){
         this->LSH_MAT[i] = new lsh_map[this->context->bucket_count];
     }
@@ -77,6 +79,15 @@ void Corpus::integrate(std::unordered_map<uint32_t, unsigned short> *relatives, 
     uint32_t mini;
     uint32_t maxi;
     uint64_t thekey;
+
+    if (relatives->size() > 5000) {
+        slice_clusters_lock[slice_number].lock();
+        if (relatives->size() > slice_biggest_clusters[slice_number]) {
+            slice_biggest_clusters[slice_number] = relatives->size();
+        }
+        slice_clusters_lock[slice_number].unlock();
+    }
+
 
     for(auto it = relatives->begin(); it!=relatives->end(); ++it){
         if(it->second >= this->context->minimum_interest){

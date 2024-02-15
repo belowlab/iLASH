@@ -26,6 +26,9 @@ public:
     std::mutex dna_lock;
     std::vector<dnabit *> dna_data; //exact values for SNPS
     std::vector<uint32_t *> dna_hashes; //hash values for shingles
+
+    std::mutex  *slice_clusters_lock;
+    std::vector<size_t> slice_biggest_clusters;
     std::unordered_map<uint32_t,std::string> dna_id; //this maps the dna_hash index to PED file indexes.
     uint32_t person_counter; //number of samples in the experiment
 
